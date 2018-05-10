@@ -1,13 +1,14 @@
-﻿using System;
+// Created by Warren Smith
+// Used in Dark Flame (www.DarkFlameGame.com)
+// Class used to move and change characters within SpriteFont
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using xmlData;
 
-namespace Zobenbralu
+namespace Nobody_Cares
 {
     public class SpecialText
     {
@@ -21,21 +22,28 @@ namespace Zobenbralu
         private int textMaxSpeed = 25;
         private int textSpeedCounter = 0;
 
-        private bool languageFilter = OptionsManager.Instance.OptionsData.languageFilter; //true; //Change this to a ScreenState Variable// -- or options menu//
+        private bool languageFilter = true; //I pull this boolean from my Options Menu
         private bool alreadyFiltered = false;
         private bool doneWriting = false;
 
-        float spacingX = 1f; //the farther from 1, the more space...
+        float spacingX = 1f; 
         int portraitState = 0;
 
+        /// <summary>
+        /// Checks to see if the characters are done printing
+        /// </summary>
         public bool DoneWriting
         { get { return doneWriting; } }
 
-        public float GetHUDWidthModifier()
-        {
-            return spacingX;// ((spacingX - 1) * 2 + 1);
-        }
+        public float GetSpacingX()
+        { get { return spacingX; } }
 
+        /// <summary>
+        /// Load the content and properties for the object
+        /// </summary>
+        /// <param name="spriteFont">SpriteFont used</param>
+        /// <param name="dialogueOffset">Offset on the screen to where the text will be displayed</param>
+        /// <param name="rnd">Random</param>
         public void LoadContent(SpriteFont spriteFont, Vector2 dialogueOffset, Random rnd)
         {
             font_16 = spriteFont;
@@ -44,7 +52,10 @@ namespace Zobenbralu
             random = rnd;
         }
 
-        public void ResetDialogue()
+        /// <summary>
+        /// Reset all properties (prepare for next dialogue statement)
+        /// </summary>
+        private void ResetDialogue()
         {
             //Keep for now in case of change//
             languageFilter = OptionsManager.Instance.OptionsData.languageFilter;
@@ -58,6 +69,12 @@ namespace Zobenbralu
             spacingX = 1f;
         }
 
+        /// <summary>
+        /// Use this method to create a new line of special characters to be drawn
+        /// </summary>
+        /// <param name="dialogueText">The actual string to be displayed</param>
+        /// <param name="pState">The "Portrait State" of the character speaking - see switch statement for reference</param>
+        /// <returns></returns>
         public string SetNewDialogue(string dialogueText, int pState)
         {
             if (fullText == dialogueText)
@@ -114,6 +131,10 @@ namespace Zobenbralu
             return fullText;
         }
 
+        /// <summary>
+        /// Used to print all the characters in the fullText at once (instead of individually).
+        /// </summary>
+        /// <param name="gameTime">Amount of time (in milliseconds) for each loop (~16 in XNA)</param>
         public void ForceFeedText(float gameTime)
         {
             int offsetIndex = 0; //number of times we multiply gameTime to offset moving Special Char positions
@@ -125,13 +146,17 @@ namespace Zobenbralu
                 specialCharacters.Add(new SpecialCharacters(
                     newChar, dialogueOffset + new Vector2(font_16.MeasureString(currentText).X * spacingX, font_16.MeasureString(fullText).Y * .5f),
                     random, portraitState, gameTime * offsetIndex, new Vector2(font_16.MeasureString("X").X, font_16.MeasureString("X").Y) / 2));
-                //
+                
                 currentText += newChar;
                 offsetIndex++;
             }
             doneWriting = true;
         }
 
+        /// <summary>
+        /// Add/Update each SpecialCharacter in the fullText
+        /// </summary>
+        /// <param name="gameTime">Amount of time (in milliseconds) for each loop (~16 in XNA)</param>
         public void Update(float gameTime)
         {
             if (currentText != fullText)
@@ -145,7 +170,7 @@ namespace Zobenbralu
                     specialCharacters.Add(new SpecialCharacters(
                         newChar, dialogueOffset + new Vector2(font_16.MeasureString(currentText).X * spacingX, font_16.MeasureString(fullText).Y * .5f),
                         random, portraitState, 0, new Vector2(font_16.MeasureString("X").X, font_16.MeasureString("X").Y) / 2));
-                    //
+                    
                     currentText += newChar;
 
                     //Quick check to see if text is full
@@ -164,6 +189,10 @@ namespace Zobenbralu
             }
         }
 
+        /// <summary>
+        /// Draw the SpecialCharacters to the screen
+        /// </summary>
+        /// <param name="spriteBatch">SpriteBatch used to draw (XNA/MonoGame)</param>
         public void Draw(SpriteBatch spriteBatch)
         {
             foreach (SpecialCharacters sChars in specialCharacters)
@@ -173,8 +202,15 @@ namespace Zobenbralu
             }
         }
 
+        /// <summary>
+        /// This is the private method to filter/change keywords
+        /// </summary>
+        /// <param name="textToFilter">Referenced text to filter</param>
         private void LanguageFilter(ref string textToFilter)
         {
+            // These were only a few of the cusswords I used - I didn't put much effort into this part
+            // This can be used for anything - You could change this to replace certain keywords
+            // Or maybe even a full language (Like in Final Fantasy X)
             textToFilter = textToFilter.Replace("Damn", "!@%#");
             textToFilter = textToFilter.Replace("damn", "!@%#");
             textToFilter = textToFilter.Replace("Fuck", "@$#%");
@@ -188,34 +224,10 @@ namespace Zobenbralu
 
             alreadyFiltered = true;
         }
-
-        //private string RandomizeFilterCharacters(string textToFilter)
-        //{
-        //    for (int i = 0; i < textToFilter.Count(); i++)
-        //    {
-        //        int randSwitch = random.Next(0, 5);
-        //        switch (randSwitch)
-        //        {
-        //            case 0:
-        //                break;
-        //            case 1:
-        //                break;
-        //            case 2:
-        //                break;
-        //            case 3:
-        //                break;
-        //            case 4:
-        //                break; 
-        //            case 5:
-        //                break;
-        //            default:
-        //                break;
-        //        }
-        //    }
-        //}
     }
 
 
+    //Special char class used for the text above
     class SpecialCharacters
     {
         //Static Displacement - Relation to Screen//
@@ -247,7 +259,6 @@ namespace Zobenbralu
             Origin = origin;
             originalPosition = Position = titleSafeArea + displacement + dialogueDisplacement + charDisplacement - origin;
             continuousMovement = true;
-            
 
             switch (portraitState)
             {
@@ -276,7 +287,6 @@ namespace Zobenbralu
                     continuousMovement = false;
                     break;
                 case 5: //Confused
-                    //moveCounter.Y = rnd.Next(0, 100) * .01f * (float)Math.PI;
                     moveSpeed = new Vector2(rnd.Next(12, 13) * .1f, rnd.Next(12, 13) * .1f);
                     Color = new Color(128, 70, 128);//Color.MediumPurple;
                     moveRadius = 10;
@@ -300,8 +310,6 @@ namespace Zobenbralu
                     break;
 
             }
-            if (moveCounterOffset != 0)
-            { }
 
             if (moveSpeed.X != 0)
             {
